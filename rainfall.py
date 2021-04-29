@@ -1,5 +1,6 @@
 import numpy as np
 from numpy import random as rd
+import matplotlib.pyplot as plt
 
 # random seed
 rd.seed(69420)
@@ -40,3 +41,4 @@ def sim_rain():
     return rain_history
 
 
+plt.plot(range(N), sim_rain())
