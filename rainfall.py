@@ -41,4 +41,21 @@ def sim_rain():
     return rain_history
 
 
-plt.plot(range(N), sim_rain())
+# run simulation
+rainfall = sim_rain()
+
+# plot daily rainfall
+plt.plot(range(N), rainfall)
+plt.title("Daily Rainfall in Princeton, NJ")
+plt.xlabel("Day of year")
+plt.ylabel("Inches of rain")
+plt.show()
+plt.close()
+
+# plot cumulative rainfall
+plt.plot(range(N), [sum(rainfall[:i]) for i in range(N)])
+plt.title("Cumulative Rainfall in Princeton, NJ")
+plt.xlabel("Day of year")
+plt.ylabel("Inches of rain")
+plt.show()
+plt.close()
