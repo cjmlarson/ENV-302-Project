@@ -24,12 +24,12 @@ def inv_exp(p, mu):
 
 
 # function to get list of rainfall amounts
-def sim_rain():
+def sim_rain(days = N):
     # list of rainfall metrics
     rain_history = []
 
     # Simulate rainy days
-    for i in range(N):
+    for i in range(days):
         rainy = (rd.uniform() < p_rainy_day)
         rain = 0
 
@@ -74,9 +74,6 @@ E_max = 0.04  # max evaporation in/day
 T_max = 0.16  # max transpiration in/day
 b = 0.2  # soil porosity index
 K_s = 1  # saturated hydraulic conductivity in/day
-
-# modeled quantity
-s = 0  # relative soil moisture
 
 # infiltration (h is storm rainfall)
 I = lambda s, h: min(h, n * Z * (1 - s))
@@ -123,5 +120,33 @@ def plot_water_loss():
     plt.show()
     plt.close()
 
+
 # %%
 
+# forward euler time step
+def sim_euler(rainfall, s_init=s_h):
+    s = s_init
+    series = []
+
+    for t in range(len(rainfall)):
+        ds = I(s, rainfall[t]) - E(s) - T(s) - L(s)
+        ds /= (n * Z)
+        s += ds
+        series.append(s)
+
+    return series
+
+
+# plot soil moisture
+def plot_soil_moisture(soil_moisture):
+    plt.plot(range(len(soil_moisture)), soil_moisture)
+    plt.title("Relative Soil Moisture")
+    plt.xlabel("Day")
+    plt.ylabel("Relative Soil Moisture")
+    plt.show()
+    plt.close()
+
+
+# %%
+# type code to run below (or in console)
+plot_soil_moisture(sim_euler(sim_rain(31)))
