@@ -112,7 +112,16 @@ def L(s):
         return K_s * (np.exp(beta * (s - s_fc)) - 1) / (np.exp(beta * (1 - s_fc)) - 1)
 
 
+# function to plot water loss curve
+def plot_water_loss():
+    x_axis = [i / 100 for i in range(100)]
+    y_axis = [L(i / 100) + E(i / 100) + T(i / 100) for i in range(100)]
+    plt.plot(x_axis, y_axis)
+    plt.title("Total Soil Losses (Evapotranspiration + Leakage)")
+    plt.xlabel("Relative Soil Moisture")
+    plt.ylabel("Losses (inches per day)")
+    plt.show()
+    plt.close()
+
 # %%
 
-plt.plot([i / 100 for i in range(100)], [L(i / 100) + E(i / 100) + T(i / 100) for i in range(100)])
-plt.show()
