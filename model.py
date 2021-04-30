@@ -24,7 +24,7 @@ def inv_exp(p, mu):
 
 
 # function to get list of rainfall amounts
-def sim_rain(days = N):
+def sim_rain(days=N):
     # list of rainfall metrics
     rain_history = []
 
@@ -42,9 +42,9 @@ def sim_rain(days = N):
 
 
 # plot daily and cumulative rainfall
-def rain_plots(rainfall):
+def plot_rain(rainfall):
     # plot daily rainfall
-    plt.plot(range(N), rainfall)
+    plt.plot(range(len(rainfall)), rainfall)
     plt.title("Daily Rainfall in Princeton, NJ")
     plt.xlabel("Day of year")
     plt.ylabel("Inches of rain")
@@ -52,7 +52,7 @@ def rain_plots(rainfall):
     plt.close()
 
     # plot cumulative rainfall
-    plt.plot(range(N), [sum(rainfall[:i]) for i in range(N)])
+    plt.plot(range(len(rainfall)), [sum(rainfall[:i]) for i in range(len(rainfall))])
     plt.title("Cumulative Rainfall in Princeton, NJ")
     plt.xlabel("Day of year")
     plt.ylabel("Inches of rain")
@@ -123,7 +123,7 @@ def plot_water_loss():
 
 # %%
 
-# forward euler time step
+# forward euler time step for soil moisture
 def sim_euler(rainfall, s_init=s_h):
     s = s_init
     series = []
@@ -148,5 +148,29 @@ def plot_soil_moisture(soil_moisture):
 
 
 # %%
+
+# function to relate decay to soil moisture
+def f_d(s):
+    if s < s_fc:
+        return s / s_fc
+    else:
+        return s_fc / s
+
+
+# function to plot soil moisture dependence
+def plot_moisture_dependence():
+    x_axis = [i / 100 for i in range(100)]
+    y_axis = [f_d(i/100) for i in range(100)]
+    plt.plot(x_axis, y_axis)
+    plt.title("Dependence of Decomposition on Soil Moisture")
+    plt.xlabel("Relative Soil Moisture")
+    plt.ylabel("Effect on Decomposition")
+    plt.show()
+    plt.close()
+
+
+# %%
 # type code to run below (or in console)
-plot_soil_moisture(sim_euler(sim_rain(31)))
+# rain = sim_rain(90)
+# plot_rain(rain)
+# plot_soil_moisture(sim_euler(rain))
