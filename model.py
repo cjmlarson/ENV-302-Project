@@ -222,6 +222,7 @@ def sim_carbon(s, C_l=C_l_init, C_h=C_h_init, C_b=C_b_init):
         d = [dC_l(C_l, C_h, C_b, s[t]), dC_h(C_l, C_h, C_b, s[t]), dC_b(C_l, C_h, C_b, s[t])]
 
         C_l += d[0]
+        print(DEC_l(C_l, C_h, C_b, s[t]))
         C_h += d[1]
         C_b += d[2]
 
@@ -233,11 +234,17 @@ def sim_carbon(s, C_l=C_l_init, C_h=C_h_init, C_b=C_b_init):
 
 
 # plot carbon levels
-def plot_carbon(C):
-    for box in C:
-        y = C[box]
+def plot_carbon(C, pool='ALL'):
+    if pool == 'ALL' :
+        for box in C:
+            y = C[box]
+            x = range(len(y))
+            plt.plot(x, y, label=box)
+
+    else:
+        y = C[pool]
         x = range(len(y))
-        plt.plot(x, y, label=box)
+        plt.plot(x, y, label=pool)
 
     plt.title("Carbon in Pools")
     plt.xlabel("Day")
@@ -249,7 +256,7 @@ def plot_carbon(C):
 
 # %%
 # type code to run below (or in console)
-h = sim_rain()
+h = sim_rain(5000)
 s = sim_soil_moisture(h)
 C = sim_carbon(s)
 
