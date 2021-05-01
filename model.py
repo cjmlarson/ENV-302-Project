@@ -211,7 +211,7 @@ def dC_b(C_l, C_h, C_b, s):
     return (1 - r_h - r_r) * DEC_l(C_l, C_h, C_b, s) + (1 - r_r) * DEC_h(C_l, C_h, C_b, s) - BD(C_l, C_h, C_b, s)
 
 
-# euler box model for carbon
+# euler box model for carbon asdf
 def sim_carbon(s, C_l=C_l_init, C_h=C_h_init, C_b=C_b_init):
     # time series for carbon
     C_l_series = []
