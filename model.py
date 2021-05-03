@@ -2,12 +2,15 @@ import numpy as np
 from numpy import random as rd
 import matplotlib.pyplot as plt
 
+# import configuration VERY IMPORTANT
+from nylsvley import *
+
 # random seed
-# rd.seed(69420)
+rd.seed(2022)
 
 # how long should simulation be
-DAYS = 365 * 20  # number of days
-steps_per_day = 24  # steps per day
+# DAYS = (365 * 20)  # number of days
+# steps_per_day = 24  # steps per day
 
 # time-related parameters
 dt = 1 / steps_per_day  # time step length in 1/days
@@ -15,17 +18,13 @@ N = DAYS * steps_per_day  # total number of iterations
 time_list = [dt * i for i in range(N)]
 
 # rainfall metrics from Google (imperial units)
-yearly_rainfall = 365 * (1 / 0.23)  # average yearly rainfall in inches (Princeton: 47)
-rainy_days = 102  # average rainy days per year (Princeton: 102)
+# yearly_rainfall = 1194  # average yearly rainfall in mm
+# rainy_days = 102  # average rainy days per year (Princeton: 102)
 DAYS_IN_YEAR = 365
 
 # "Poisson" distribution (is actually a binomial approximation)
 p_rainy = dt * rainy_days / DAYS_IN_YEAR  # probability a day is raining
 exp_rain = yearly_rainfall / rainy_days  # expected rainfall on rainy days
-
-# REDEFINE FROM NYLSVLEY
-p_rainy = dt * 0.23
-exp_rain = 11  # MILLIMETERS
 
 
 # Exponential distribution inverse cdf
@@ -77,16 +76,16 @@ def plot_rain(rainfall, days=N):
 
 # soil moisture box model setup
 # parameters (all quantities normalized per unit area)
-Z = 0.8 * 1000  # depth of the soil in mm
-n = 0.4  # porosity
-s_h = 0.02  # hygroscopic point
-s_w = 0.065  # wilting point
-s_ast = 0.17  # water stress point
-s_fc = 0.3  # field capacity
-E_max = 0.9  # max evaporation in/day
-T_max = 3.6  # max transpiration in/day
-b = 0.2  # soil porosity index
-K_s = 1.1  # saturated hydraulic conductivity in/day
+# Z = 0.8 * 1000  # depth of the soil in mm
+# n = 0.4  # porosity
+# s_h = 0.02  # hygroscopic point
+# s_w = 0.065  # wilting point
+# s_ast = 0.17  # water stress point
+# s_fc = 0.3  # field capacity
+# E_max = 0.9  # max evaporation in/day
+# T_max = 3.6  # max transpiration in/day
+# b = 0.2  # soil porosity index
+# K_s = 1.1  # saturated hydraulic conductivity in/day
 
 # infiltration (h is storm rainfall)
 I = lambda s, h: min(h, n * Z * (1 - s))
@@ -137,7 +136,7 @@ def plot_water_loss():
 # %%
 
 # forward euler time step for soil moisture
-def sim_soil_moisture(rainfall, s_init=0.11):
+def sim_soil_moisture(rainfall):
     s = s_init
     series = []
 
@@ -186,17 +185,17 @@ def plot_moisture_dependence():
 # carbon box model setup (metric units)
 
 # parameters
-ADD = 1.5  # litterfall in gC per day*m^2
-k_d = 8.5 * 10 ** (-3)
-k_l = 6.5 * 10 ** (-5)
-k_h = 2.5 * 10 ** (-6)
-r_h = 0.25
-r_r = 0.6
+# ADD = 1.5  # litterfall in gC per day*m^2
+# k_d = 8.5 * 10 ** (-3)
+# k_l = 6.5 * 10 ** (-5)
+# k_h = 2.5 * 10 ** (-6)
+# r_h = 0.25
+# r_r = 0.6
 
 # initial values (porporato et al.)
-C_h_init = 8500
-C_b_init = 80
-C_l_init = 1200
+# C_h_init = 8500
+# C_b_init = 80
+# C_l_init = 1200
 
 
 # functions
@@ -264,7 +263,7 @@ def plot_carbon(C, pool='ALL'):
         x = time_list
         plt.plot(x, y, label=pool)
 
-    plt.title("Carbon in Pools")
+    plt.title("Carbon Content")
     plt.xlabel("Day")
     plt.ylabel("Carbon (gC / (m^3)")
     plt.ylim(ymin=0)
