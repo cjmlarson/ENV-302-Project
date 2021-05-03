@@ -3,7 +3,7 @@ from numpy import random as rd
 import matplotlib.pyplot as plt
 
 # random seed
-rd.seed(69420)
+# rd.seed(69420)
 
 # how long should simulation be
 DAYS = 365 * 20  # number of days
@@ -52,12 +52,15 @@ def sim_rain(periods=N):
 
 
 # plot daily and cumulative rainfall
-def plot_rain(rainfall):
+def plot_rain(rainfall, days=N):
     # plot daily rainfall
-    plt.plot(time_list, rainfall)
-    plt.title("Rainfall Events in Princeton, NJ")
+    x = time_list[:days * steps_per_day]
+    y = rainfall[:days * steps_per_day]
+
+    plt.plot(x, y)
+    plt.title("Rainfall Events in Nylsvley, South Africa")
     plt.xlabel("Day of year")
-    plt.ylabel("Inches of rain")
+    plt.ylabel("Millimeters of rain")
     plt.show()
     plt.close()
 
@@ -148,8 +151,8 @@ def sim_soil_moisture(rainfall, s_init=0.11):
 
 
 # plot soil moisture
-def plot_soil_moisture(soil_moisture):
-    plt.plot(time_list, soil_moisture)
+def plot_soil_moisture(soil_moisture, days=N):
+    plt.plot(time_list[:days * steps_per_day], soil_moisture[:days * steps_per_day])
     plt.title("Relative Soil Moisture")
     plt.xlabel("Day")
     plt.ylabel("Relative Soil Moisture")
@@ -248,6 +251,8 @@ def sim_carbon(s, C_l=C_l_init, C_h=C_h_init, C_b=C_b_init):
 
 # plot carbon levels
 def plot_carbon(C, pool='ALL'):
+    y = []
+
     if pool == 'ALL':
         for box in C:
             y = C[box]
@@ -262,6 +267,8 @@ def plot_carbon(C, pool='ALL'):
     plt.title("Carbon in Pools")
     plt.xlabel("Day")
     plt.ylabel("Carbon (gC / (m^3)")
+    plt.ylim(ymin=0)
+    plt.ylim(ymax=1.2 * max(y))
     plt.legend()
     plt.show()
     plt.close()
@@ -273,8 +280,8 @@ h = sim_rain()
 s = sim_soil_moisture(h)
 C = sim_carbon(s)
 
-plot_rain(h)
-plot_soil_moisture(s)
+plot_rain(h, days=365)
+plot_soil_moisture(s, days=365)
 plot_carbon(C, 'Litter')
 plot_carbon(C, 'Humus')
 plot_carbon(C, 'Biomass')
