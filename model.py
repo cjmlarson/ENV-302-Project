@@ -5,17 +5,27 @@ import matplotlib.pyplot as plt
 # random seed
 rd.seed(69420)
 
-# number of days to simulate
-N = 365
+# how long should simulation be
+DAYS = 365 * 20  # number of days
+steps_per_day = 24  # steps per day
+
+# time-related parameters
+dt = 1 / steps_per_day  # time step length in 1/days
+N = DAYS * steps_per_day  # total number of iterations
+time_list = [dt * i for i in range(N)]
 
 # rainfall metrics from Google (imperial units)
-yearly_rainfall = 47  # average yearly rainfall in inches
-rainy_days = 102  # average rainy days per year
+yearly_rainfall = 365 * (1 / 0.23)  # average yearly rainfall in inches (Princeton: 47)
+rainy_days = 102  # average rainy days per year (Princeton: 102)
 DAYS_IN_YEAR = 365
 
 # "Poisson" distribution (is actually a binomial approximation)
-p_rainy_day = rainy_days / DAYS_IN_YEAR  # probability a day is raining
+p_rainy = dt * rainy_days / DAYS_IN_YEAR  # probability a day is raining
 exp_rain = yearly_rainfall / rainy_days  # expected rainfall on rainy days
+
+# REDEFINE FROM NYLSVLEY
+p_rainy = dt * 0.23
+exp_rain = 11  # MILLIMETERS
 
 
 # Exponential distribution inverse cdf
@@ -24,13 +34,13 @@ def inv_exp(p, mu):
 
 
 # function to get list of rainfall amounts
-def sim_rain(days=N):
+def sim_rain(periods=N):
     # list of rainfall metrics
     rain_history = []
 
     # Simulate rainy days
-    for i in range(days):
-        rainy = (rd.uniform() < p_rainy_day)
+    for i in range(periods):
+        rainy = (rd.uniform() < p_rainy)
         rain = 0
 
         if rainy:
@@ -44,36 +54,36 @@ def sim_rain(days=N):
 # plot daily and cumulative rainfall
 def plot_rain(rainfall):
     # plot daily rainfall
-    plt.plot(range(len(rainfall)), rainfall)
-    plt.title("Daily Rainfall in Princeton, NJ")
+    plt.plot(time_list, rainfall)
+    plt.title("Rainfall Events in Princeton, NJ")
     plt.xlabel("Day of year")
     plt.ylabel("Inches of rain")
     plt.show()
     plt.close()
 
     # plot cumulative rainfall
-    plt.plot(range(len(rainfall)), [sum(rainfall[:i]) for i in range(len(rainfall))])
-    plt.title("Cumulative Rainfall in Princeton, NJ")
-    plt.xlabel("Day of year")
-    plt.ylabel("Inches of rain")
-    plt.show()
-    plt.close()
+    # plt.plot(time_list, [sum(rainfall[:i]) for i in range(len(rainfall))])
+    # plt.title("Cumulative Rainfall in Princeton, NJ")
+    # plt.xlabel("Day of year")
+    # plt.ylabel("Inches of rain")
+    # plt.show()
+    # plt.close()
 
 
 # %%
 
 # soil moisture box model setup
 # parameters (all quantities normalized per unit area)
-Z = 32  # depth of the soil in inches
-n = 0.5  # porosity
-s_h = 0.1  # hygroscopic point
-s_w = 0.2  # wilting point
-s_ast = 0.3  # water stress point
-s_fc = 0.5  # field capacity
-E_max = 0.04  # max evaporation in/day
-T_max = 0.16  # max transpiration in/day
+Z = 0.8 * 1000  # depth of the soil in mm
+n = 0.4  # porosity
+s_h = 0.02  # hygroscopic point
+s_w = 0.065  # wilting point
+s_ast = 0.17  # water stress point
+s_fc = 0.3  # field capacity
+E_max = 0.9  # max evaporation in/day
+T_max = 3.6  # max transpiration in/day
 b = 0.2  # soil porosity index
-K_s = 1  # saturated hydraulic conductivity in/day
+K_s = 1.1  # saturated hydraulic conductivity in/day
 
 # infiltration (h is storm rainfall)
 I = lambda s, h: min(h, n * Z * (1 - s))
@@ -124,12 +134,12 @@ def plot_water_loss():
 # %%
 
 # forward euler time step for soil moisture
-def sim_soil_moisture(rainfall, s_init=s_h):
+def sim_soil_moisture(rainfall, s_init=0.11):
     s = s_init
     series = []
 
     for t in range(len(rainfall)):
-        ds = I(s, rainfall[t]) - E(s) - T(s) - L(s)
+        ds = I(s, rainfall[t]) - (dt * (E(s) + T(s) + L(s)))
         ds /= (n * Z)
         s += ds
         series.append(s)
@@ -139,7 +149,7 @@ def sim_soil_moisture(rainfall, s_init=s_h):
 
 # plot soil moisture
 def plot_soil_moisture(soil_moisture):
-    plt.plot(range(len(soil_moisture)), soil_moisture)
+    plt.plot(time_list, soil_moisture)
     plt.title("Relative Soil Moisture")
     plt.xlabel("Day")
     plt.ylabel("Relative Soil Moisture")
@@ -178,7 +188,7 @@ k_d = 8.5 * 10 ** (-3)
 k_l = 6.5 * 10 ** (-5)
 k_h = 2.5 * 10 ** (-6)
 r_h = 0.25
-r_r = 0.75
+r_r = 0.6
 
 # initial values (porporato et al.)
 C_h_init = 8500
@@ -204,14 +214,18 @@ def dC_l(C_l, C_h, C_b, s):
 
 
 def dC_h(C_l, C_h, C_b, s):
-    return r_h * DEC_l(C_l, C_h, C_b, s) + DEC_h(C_l, C_h, C_b, s)
+    return r_h * DEC_l(C_l, C_h, C_b, s) - DEC_h(C_l, C_h, C_b, s)
 
 
 def dC_b(C_l, C_h, C_b, s):
     return (1 - r_h - r_r) * DEC_l(C_l, C_h, C_b, s) + (1 - r_r) * DEC_h(C_l, C_h, C_b, s) - BD(C_l, C_h, C_b, s)
 
 
-# euler box model for carbon asdf
+def dC(C_l, C_h, C_b, s):
+    return ADD - r_r * DEC_l(C_l, C_h, C_b, s) - r_r * DEC_h(C_l, C_h, C_b, s)
+
+
+# euler box model for carbon
 def sim_carbon(s, C_l=C_l_init, C_h=C_h_init, C_b=C_b_init):
     # time series for carbon
     C_l_series = []
@@ -221,10 +235,9 @@ def sim_carbon(s, C_l=C_l_init, C_h=C_h_init, C_b=C_b_init):
     for t in range(len(s)):
         d = [dC_l(C_l, C_h, C_b, s[t]), dC_h(C_l, C_h, C_b, s[t]), dC_b(C_l, C_h, C_b, s[t])]
 
-        C_l += d[0]
-        print(DEC_l(C_l, C_h, C_b, s[t]))
-        C_h += d[1]
-        C_b += d[2]
+        C_l += d[0] * dt
+        C_h += d[1] * dt
+        C_b += d[2] * dt
 
         C_l_series.append(C_l)
         C_h_series.append(C_h)
@@ -235,15 +248,15 @@ def sim_carbon(s, C_l=C_l_init, C_h=C_h_init, C_b=C_b_init):
 
 # plot carbon levels
 def plot_carbon(C, pool='ALL'):
-    if pool == 'ALL' :
+    if pool == 'ALL':
         for box in C:
             y = C[box]
-            x = range(len(y))
+            x = time_list
             plt.plot(x, y, label=box)
 
     else:
         y = C[pool]
-        x = range(len(y))
+        x = time_list
         plt.plot(x, y, label=pool)
 
     plt.title("Carbon in Pools")
@@ -256,10 +269,12 @@ def plot_carbon(C, pool='ALL'):
 
 # %%
 # type code to run below (or in console)
-h = sim_rain(5000)
+h = sim_rain()
 s = sim_soil_moisture(h)
 C = sim_carbon(s)
 
 plot_rain(h)
 plot_soil_moisture(s)
-plot_carbon(C)
+plot_carbon(C, 'Litter')
+plot_carbon(C, 'Humus')
+plot_carbon(C, 'Biomass')
