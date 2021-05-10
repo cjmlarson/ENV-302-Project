@@ -1,9 +1,10 @@
 import numpy as np
 from numpy import random as rd
 import matplotlib.pyplot as plt
+import csv
 
 # import configuration VERY IMPORTANT
-from nylsvley import *
+from hawaii_high import *
 
 # random seed
 rd.seed(2022)
@@ -57,7 +58,7 @@ def plot_rain(rainfall, days=N):
     y = rainfall[:days * steps_per_day]
 
     plt.plot(x, y)
-    plt.title("Rainfall Events in Nylsvley, South Africa")
+    plt.title("Rainfall Events in " + location)
     plt.xlabel("Day of year")
     plt.ylabel("Millimeters of rain")
     plt.show()
@@ -262,13 +263,13 @@ def plot_carbon(C, pool='ALL'):
         y = C[pool]
         x = time_list
         plt.plot(x, y, label=pool)
+        plt.title("Carbon Content")
+        plt.legend()
 
-    plt.title("Carbon Content")
     plt.xlabel("Day")
     plt.ylabel("Carbon (gC / (m^3)")
     plt.ylim(ymin=0)
     plt.ylim(ymax=1.2 * max(y))
-    plt.legend()
     plt.show()
     plt.close()
 
@@ -284,3 +285,6 @@ plot_soil_moisture(s, days=365)
 plot_carbon(C, 'Litter')
 plot_carbon(C, 'Humus')
 plot_carbon(C, 'Biomass')
+
+# %%
+# export to CSV for analysis
